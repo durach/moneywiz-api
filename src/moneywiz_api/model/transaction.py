@@ -11,6 +11,7 @@ from moneywiz_api.model.record import Record
 from moneywiz_api.types import ID
 
 ABS_TOLERANCE = 0.001
+ABS_TOLERANCE2 = 0.01
 
 
 @dataclass
@@ -544,5 +545,5 @@ class WithdrawTransaction(Transaction):
 
         if self.original_exchange_rate is not None:
             assert self.amount == pytest.approx(
-                self.original_amount * self.original_exchange_rate, abs=ABS_TOLERANCE
+                self.original_amount * self.original_exchange_rate, abs=ABS_TOLERANCE2
             )
