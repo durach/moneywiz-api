@@ -419,8 +419,7 @@ class TransferDepositTransaction(Transaction):
 
         # assert self.amount ==  self.original_amount # original_amount could be different with amount ZCURRENCYEXCHANGERATE is playing up
         assert self.original_amount == pytest.approx(
-            -self.sender_amount * self.original_exchange_rate
-            - (self.original_fee or 0),
+            -self.sender_amount * self.original_exchange_rate,
             abs=ABS_TOLERANCE,
         )
 
