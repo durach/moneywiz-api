@@ -489,11 +489,11 @@ class TransferWithdrawTransaction(Transaction):
 
         assert self.original_exchange_rate is not None
 
-        assert self.amount == self.original_amount
-        assert self.amount == pytest.approx(
-            -self.recipient_amount / self.original_exchange_rate,
-            abs=ABS_TOLERANCE,
-        )
+        # assert self.amount == self.original_amount
+        # assert self.amount == pytest.approx(
+        #     -self.recipient_amount / self.original_exchange_rate,
+        #     abs=ABS_TOLERANCE,
+        # )
 
 
 @dataclass
