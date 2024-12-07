@@ -12,6 +12,7 @@ from moneywiz_api.model.account import (
 )
 
 from moneywiz_api.model.category import Category
+from moneywiz_api.model.group import Group
 from moneywiz_api.model.investment_holding import InvestmentHolding
 from moneywiz_api.model.payee import Payee
 from moneywiz_api.model.tag import Tag
@@ -57,4 +58,5 @@ __all__ = [
     "InvestmentSellTransaction",
     "InvestmentExchangeTransaction",
     "ReconcileTransaction",
+    "Group"
 ]

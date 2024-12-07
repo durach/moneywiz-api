@@ -3,6 +3,7 @@ import logging
 
 from moneywiz_api.database_accessor import DatabaseAccessor
 from moneywiz_api.managers.account_manager import AccountManager
+from moneywiz_api.managers.group_manager import GroupManager
 from moneywiz_api.managers.category_manager import CategoryManager
 from moneywiz_api.managers.investment_holding_manager import (
     InvestmentHoldingManager,
@@ -18,6 +19,7 @@ class MoneywizApi:
     def __init__(self, db_file: Path):
         self.accessor = DatabaseAccessor(db_file)
         self.account_manager = AccountManager()
+        self.group_manager = GroupManager()
         self.payee_manager = PayeeManager()
         self.category_manager = CategoryManager()
         self.transaction_manager = TransactionManager()
@@ -28,6 +30,7 @@ class MoneywizApi:
 
     def load(self):
         self.account_manager.load(self.accessor)
+        self.group_manager.load(self.accessor)
         self.payee_manager.load(self.accessor)
         self.category_manager.load(self.accessor)
         self.transaction_manager.load(self.accessor)
