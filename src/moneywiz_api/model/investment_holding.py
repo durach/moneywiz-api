@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from moneywiz_api.model.raw_data_handler import RawDataHandler as RDH
 from moneywiz_api.model.record import Record
-from moneywiz_api.types import ID
+from moneywiz_api.types import InvestmentObjectType, ID
+
 
 
 @dataclass
@@ -25,14 +26,10 @@ class InvestmentHolding(Record):
     price_per_share_available_online: bool
 
     """
-    Unsure about the usage.
-    value can be 0,1
-    
-    seems like: 
-        0 -> aggregate balance from all transactions
-        1 -> use number_of_shares as balance
+        0 -> investment object is a stock
+        1 -> investment object is a forex
     """
-    _investment_object_type: int = field(repr=False)
+    investment_object_type: int
 
     """
     Unsure
@@ -56,7 +53,7 @@ class InvestmentHolding(Record):
             row["ZISPRICEPERSHAREAVAILABLEONLINE"] == 1
         )
 
-        self._investment_object_type = row["ZINVESTMENTOBJECTTYPE"]
+        self.investment_object_type = self._convert_investment_object_type(row["ZINVESTMENTOBJECTTYPE"])
         self._cost_basis_of_missing_ob_shares = RDH.get_decimal(
             row, "ZCOSTBASISOFMISSINGOBSHARES"
         )
@@ -73,11 +70,16 @@ class InvestmentHolding(Record):
         assert self.symbol is not None, self.as_dict()
         assert self.description is not None, self.as_dict()
 
-        assert self._investment_object_type is not None, self.as_dict()
+        assert self.investment_object_type is not None, self.as_dict()
         assert self._cost_basis_of_missing_ob_shares is not None, self.as_dict()
 
     def as_dict(self) -> Dict[str, Any]:
         original = super().as_dict()
-        del original["_investment_object_type"]
         del original["_cost_basis_of_missing_ob_shares"]
         return original
+
+    @staticmethod
+    def _convert_investment_object_type(type_: Optional[int]) -> InvestmentObjectType:
+        if type_ in [0, 1]:
+            return "Forex/Crypto" if type_ == 1 else "Investment"
+        raise RuntimeError(f"Invalid type {type_}")
