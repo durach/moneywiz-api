@@ -173,6 +173,7 @@ class InvestmentBuyTransaction(InvestmentTransaction):
     investment_holding: ID
     number_of_shares: Decimal
     price_per_share: Decimal
+    symbol: str
 
     def __init__(self, row):
         super().__init__(row)
@@ -184,6 +185,7 @@ class InvestmentBuyTransaction(InvestmentTransaction):
         self.investment_holding = row["ZINVESTMENTHOLDING"]
         self.number_of_shares = RDH.get_decimal(row, "ZNUMBEROFSHARES1")
         self.price_per_share = RDH.get_decimal(row, "ZPRICEPERSHARE1")
+        self.symbol = row["ZSYMBOL1"]
 
         # Fixes
         self.fee = max(self.fee, 0)
@@ -210,6 +212,7 @@ class InvestmentBuyTransaction(InvestmentTransaction):
         assert -(
             self.number_of_shares * self.price_per_share + self.fee
         ) == pytest.approx(self.amount, abs=ABS_TOLERANCE)
+        assert self.symbol is not None
 
 
 @dataclass
