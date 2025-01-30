@@ -22,6 +22,7 @@ class Category(Record):
         self.parent_id = row["ZPARENTCATEGORY"]
         self.type = self._convert_type(row["ZTYPE2"])
         self.user = row["ZUSER3"]
+        self.display_order = row["ZDISPLAYORDER2"]
 
         # Fixes
 
@@ -29,6 +30,7 @@ class Category(Record):
         assert self.name is not None, self.as_dict()
         assert self.type is not None, self.as_dict()
         assert self.user is not None, self.as_dict()
+        assert self.display_order is not None, self.as_dict()
 
     @staticmethod
     def _convert_type(type_: Optional[int]) -> CategoryType:
