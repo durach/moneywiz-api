@@ -371,6 +371,13 @@ class TransferDepositTransaction(Transaction):
     account: ID
     amount: Decimal  # pos: in
 
+    # Have a value only if it's a transfer to a Forex account
+    # No fee as it is present only in corresponding TransferWithdrawTransaction
+    investment_holding: Optional[ID]
+    number_of_shares: Optional[Decimal]
+    price_per_share: Optional[Decimal]
+    symbol: Optional[str]
+
     sender_account: ID
     sender_transaction: ID
 
@@ -380,8 +387,8 @@ class TransferDepositTransaction(Transaction):
     sender_amount: Decimal
     sender_currency: str
 
-    original_fee: Optional[Decimal]
-    original_fee_currency: Optional[str]
+    # original_fee: Optional[Decimal]
+    # original_fee_currency: Optional[str]
 
     original_exchange_rate: Decimal
 
@@ -389,6 +396,11 @@ class TransferDepositTransaction(Transaction):
         super().__init__(row)
         self.account = row["ZACCOUNT2"]
         self.amount = RDH.get_decimal(row, "ZAMOUNT1")
+
+        self.investment_holding = row["ZINVESTMENTHOLDING"]
+        self.number_of_shares = RDH.get_nullable_decimal(row, "ZNUMBEROFSHARES1")
+        self.price_per_share = RDH.get_nullable_decimal(row, "ZPRICEPERSHARE1")
+        self.symbol = row["ZSYMBOL1"]
 
         self.sender_account = row["ZSENDERACCOUNT"]
         self.sender_transaction = row["ZSENDERTRANSACTION"]
@@ -398,8 +410,8 @@ class TransferDepositTransaction(Transaction):
         self.sender_amount = RDH.get_decimal(row, "ZORIGINALSENDERAMOUNT")
         self.sender_currency = row["ZORIGINALSENDERCURRENCY"]
 
-        self.original_fee = RDH.get_nullable_decimal(row, "ZORIGINALFEE")
-        self.original_fee_currency = row["ZORIGINALFEECURRENCY"]
+        # self.original_fee = RDH.get_nullable_decimal(row, "ZORIGINALFEE")
+        # self.original_fee_currency = row["ZORIGINALFEECURRENCY"]
 
         self.original_exchange_rate = RDH.get_decimal(row, "ZORIGINALEXCHANGERATE")
 
@@ -422,12 +434,14 @@ class TransferDepositTransaction(Transaction):
         assert self.sender_amount <= 0
         assert self.sender_currency is not None
 
-        if self.original_fee is not None and self.original_fee != 0:
-            assert self.original_fee_currency is not None
+        if self.investment_holding is None:
+            assert self.amount == pytest.approx(self.original_amount, abs=ABS_TOLERANCE)
+        else:
+            assert self.number_of_shares is not None
+            assert self.price_per_share is not None
+            # assert self.original_fee_currency is not None
+            assert self.symbol is not None
 
-        assert self.original_exchange_rate is not None
-
-        # assert self.amount ==  self.original_amount # original_amount could be different with amount ZCURRENCYEXCHANGERATE is playing up
         assert self.original_amount == pytest.approx(
             -self.sender_amount * self.original_exchange_rate,
             abs=ABS_TOLERANCE,
