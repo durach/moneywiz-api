@@ -455,7 +455,14 @@ class TransferWithdrawTransaction(Transaction):
     """
 
     account: ID
-    amount: Decimal  # neg: out
+    amount: Decimal
+
+    # Have a value only if it's a transfer to a Forex account
+    fee: Optional[Decimal]
+    investment_holding: Optional[ID]
+    number_of_shares: Optional[Decimal]
+    price_per_share: Optional[Decimal]
+    symbol: Optional[str]
 
     recipient_account: ID
     recipient_transaction: ID
@@ -475,6 +482,13 @@ class TransferWithdrawTransaction(Transaction):
         super().__init__(row)
         self.account = row["ZACCOUNT2"]
         self.amount = RDH.get_decimal(row, "ZAMOUNT1")
+
+        self.fee = RDH.get_nullable_decimal(row, "ZFEE2")
+
+        self.investment_holding = row["ZINVESTMENTHOLDING"]
+        self.number_of_shares = RDH.get_nullable_decimal(row, "ZNUMBEROFSHARES1")
+        self.price_per_share = RDH.get_nullable_decimal(row, "ZPRICEPERSHARE1")
+        self.symbol = row["ZSYMBOL1"]
 
         self.recipient_account = row["ZRECIPIENTACCOUNT1"]
         self.recipient_transaction = row["ZRECIPIENTTRANSACTION"]
@@ -508,16 +522,20 @@ class TransferWithdrawTransaction(Transaction):
         assert self.recipient_amount > 0
         assert self.recipient_currency is not None
 
-        if self.original_fee is not None and self.original_fee != 0:
+        if self.investment_holding is None:
+            assert self.amount == self.original_amount
+        else:
+            assert self.fee is not None
+            assert self.number_of_shares is not None
+            assert self.price_per_share is not None
             assert self.original_fee_currency is not None
+            assert self.symbol is not None
 
         assert self.original_exchange_rate is not None
-
-        # assert self.amount == self.original_amount
-        # assert self.amount == pytest.approx(
-        #     -self.recipient_amount / self.original_exchange_rate,
-        #     abs=ABS_TOLERANCE,
-        # )
+        assert self.original_amount == pytest.approx(
+            -self.recipient_amount / self.original_exchange_rate,
+            abs=ABS_TOLERANCE,
+        )
 
 
 @dataclass
