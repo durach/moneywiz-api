@@ -107,6 +107,7 @@ class InvestmentExchangeTransaction(Transaction):
     from_number_of_shares: Decimal  # neg
     to_number_of_shares: Decimal  # pos
 
+    fee: Decimal
     original_fee: Decimal  # pos: fee, neg: income?
     original_fee_currency: str
 
@@ -121,6 +122,7 @@ class InvestmentExchangeTransaction(Transaction):
         self.from_number_of_shares = row["ZFROMNUMBEROFSHARES"]
         self.to_number_of_shares = row["ZTONUMBEROFSHARES"]
 
+        self.fee = RDH.get_decimal(row, "ZFEE2")
         self.original_fee = row["ZORIGINALFEE"]
         self.original_fee_currency = row["ZORIGINALFEECURRENCY"]
 
@@ -144,6 +146,8 @@ class InvestmentExchangeTransaction(Transaction):
         assert self.original_fee is not None
         assert self.original_fee_currency in [self.from_symbol, self.to_symbol]
 
+        if self.fee != 0:
+            assert self.original_fee != 0
 
 @dataclass
 class InvestmentTransaction(Transaction, ABC):
